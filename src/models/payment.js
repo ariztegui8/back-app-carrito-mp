@@ -9,13 +9,13 @@ export const createPayment = async (db, paymentData) => {
 // Función para obtener un pago por ID
 export const getPaymentById = async (db, id) => {
   const collection = db.collection('payments');
-  return await collection.findOne({ _id: new ObjectId(id) });
+  return await collection.findOne({ _id: id });  // Aquí ya no convertimos id a ObjectId
 };
 
 // Función para actualizar un pago por ID
 export const updatePayment = async (db, id, paymentData) => {
   const collection = db.collection('payments');
-  return await collection.updateOne({ _id: new ObjectId(id) }, { $set: paymentData });
+  return await collection.updateOne({ _id: id }, { $set: paymentData });  // Aquí también mantenemos el id como string
 };
 
 // Función para listar todos los pagos (opcionalmente podrías añadir filtros y paginación)

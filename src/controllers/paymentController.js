@@ -36,7 +36,7 @@ export const createOrderController = async (req, res, db) => {
     }
 };
 
-export const receiveWebhookController = async (req, res) => {
+export const receiveWebhookController = async (req, res, db) => {
     const paymentId = req.query['data.id'] || req.query.id;
 
     if (!paymentId) {
@@ -56,9 +56,27 @@ export const receiveWebhookController = async (req, res) => {
             throw new Error(`API request failed with status ${response.status}`);
         }
 
-        const data = await response.json();
-        console.log(data);
-        res.status(200).json(data);
+        const paymentDetails = await response.json();
+        console.log("Received payment details:", paymentDetails);
+
+        // Buscar si ya existe un registro de pago en la base de datos
+        const existingPayment = await getPaymentById(db, paymentId);
+
+        if (existingPayment) {
+            // Actualizar el pago existente con los nuevos detalles
+            const updatedPayment = await updatePayment(db, paymentId, { status: paymentDetails.status });
+            console.log("Updated existing payment:", updatedPayment);
+        } else {
+            // Crear un nuevo registro de pago si no existe
+            const newPayment = await createPayment(db, {
+                _id: paymentId,  // Aquí simplemente usamos el paymentId como string
+                status: paymentDetails.status,
+                details: paymentDetails
+            });
+            console.log("Created new payment:", newPayment);
+        }
+
+        res.status(200).json({ message: "Webhook processed successfully" });
     } catch (error) {
         console.error('Error handling webhook:', error);
         res.status(500).send({ error: 'Error handling webhook', details: error.message });
