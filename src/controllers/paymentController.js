@@ -36,7 +36,7 @@ export const createOrderController = async (req, res, db) => {
     }
 };
 
-export const receiveWebhookController = async (req, res, db) => {
+export const receiveWebhookController = async (req, res) => {
     const paymentId = req.query['data.id'] || req.query.id;
 
     if (!paymentId) {
@@ -57,9 +57,6 @@ export const receiveWebhookController = async (req, res, db) => {
         }
 
         const data = await response.json();
-        // Actualizar el estado del pago en la base de datos
-        await updatePayment(db, paymentId, { status: data.status, details: data });
-
         console.log(data);
         res.status(200).json(data);
     } catch (error) {
