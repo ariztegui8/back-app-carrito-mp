@@ -3,15 +3,23 @@ import cors from 'cors';
 import { MongoClient } from 'mongodb';
 import {config} from 'dotenv';
 import productRoutes from './routes/productRoutes.js';
+import { PORT } from '../config.js';
+import paymentRoutes from './routes/paymentRoutes.js';
+import morgan from 'morgan';
 
 
 config()
 
 const app = express()
-const PORT = process.env.PORT || 3001
+
+app.use(morgan('dev'));
+
+app.use(express.json());
+
+// const PORT = process.env.PORT || 3001
 
 app.use(cors())
-app.use(express.json())
+
 app.use('/uploads', express.static('uploads'))
 
 const urlMongo = `${process.env.MONGO_URL}?retryWrites=true&w=majority`
@@ -25,6 +33,7 @@ async function main() {
     const db = client.db('cart-shop')
 
     app.use('/api/product', productRoutes(db))
+    app.use('/api', paymentRoutes(db))
  
 
     app.listen(PORT, () => {
